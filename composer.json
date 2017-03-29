@@ -18,7 +18,8 @@
         "yiisoft/yii2": "~2.0.13",
         "yiisoft/yii2-bootstrap": "~2.0.0",
         "yiisoft/yii2-swiftmailer": "~2.0.0",
-        "beberlei/assert": "^2.7"
+        "beberlei/assert": "^2.7",
+        "ramsey/uuid": "^3.6"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

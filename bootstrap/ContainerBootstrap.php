@@ -4,6 +4,8 @@ namespace app\bootstrap;
 
 use app\dispatchers\EventDispatcher;
 use app\dispatchers\DummyEventDispatcher;
+use app\repositories\AREmployeeRepository;
+use app\repositories\EmployeeRepository;
 use yii\base\BootstrapInterface;
 
 class ContainerBootstrap implements BootstrapInterface
@@ -13,5 +15,7 @@ class ContainerBootstrap implements BootstrapInterface
         $container = \Yii::$container;
 
         $container->setSingleton(EventDispatcher::class, DummyEventDispatcher::class);
+
+        $container->setSingleton(EmployeeRepository::class, AREmployeeRepository::class);
     }
 }

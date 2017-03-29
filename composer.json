@@ -20,7 +20,8 @@
         "yiisoft/yii2-swiftmailer": "~2.0.0",
         "beberlei/assert": "^2.7",
         "ramsey/uuid": "^3.6",
-        "la-haute-societe/yii2-save-relations-behavior": "^1.1"
+        "la-haute-societe/yii2-save-relations-behavior": "^1.1",
+        "ocramius/proxy-manager": "^2.1"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

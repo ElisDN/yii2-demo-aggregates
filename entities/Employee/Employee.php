@@ -5,6 +5,7 @@ namespace app\entities\Employee;
 use app\entities\AggregateRoot;
 use app\entities\Employee\Events;
 use app\entities\EventTrait;
+use ArrayObject;
 
 class Employee implements AggregateRoot
 {
@@ -31,9 +32,9 @@ class Employee implements AggregateRoot
      */
     private $createDate;
     /**
-     * @var Status[]
+     * @var ArrayObject|Status[]
      */
-    private $statuses = [];
+    private $statuses;
 
     public function __construct(Id $id, \DateTimeImmutable $date, Name $name, Address $address, array $phones)
     {
@@ -41,6 +42,7 @@ class Employee implements AggregateRoot
         $this->name = $name;
         $this->address = $address;
         $this->phones = new Phones($phones);
+        $this->statuses = new ArrayObject();
         $this->createDate = $date;
         $this->addStatus(Status::ACTIVE, $date);
         $this->recordEvent(new Events\EmployeeCreated($this->id));
@@ -108,7 +110,8 @@ class Employee implements AggregateRoot
 
     private function getCurrentStatus(): Status
     {
-        return end($this->statuses);
+        $statuses = $this->statuses->getArrayCopy();
+        return end($statuses);
     }
 
     private function addStatus($value, \DateTimeImmutable $date): void
@@ -121,5 +124,5 @@ class Employee implements AggregateRoot
     public function getPhones(): array { return $this->phones->getAll(); }
     public function getAddress(): Address { return $this->address; }
     public function getCreateDate(): \DateTimeImmutable { return $this->createDate; }
-    public function getStatuses(): array { return $this->statuses; }
+    public function getStatuses(): array { return $this->statuses->getArrayCopy(); }
 }

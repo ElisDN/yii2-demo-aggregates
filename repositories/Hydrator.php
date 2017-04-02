@@ -20,6 +20,20 @@ class Hydrator
         return $target;
     }
 
+    public function extract($object, array $fields)
+    {
+        $result = [];
+        $reflection = $this->getReflectionClass(get_class($object));
+        foreach ($fields as $name) {
+            $property = $reflection->getProperty($name);
+            if ($property->isPrivate() || $property->isProtected()) {
+                $property->setAccessible(true);
+            }
+            $result[$property->getName()] = $property->getValue($object);
+        }
+        return $result;
+    }
+
     /**
      * @param string $className
      * @return \ReflectionClass

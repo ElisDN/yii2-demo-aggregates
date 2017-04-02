@@ -9,6 +9,9 @@ use app\entities\Employee\Name;
 use app\entities\Employee\Phone;
 use app\entities\Employee\Phones;
 use app\entities\Employee\Status;
+use ArrayObject;
+use ProxyManager\Factory\LazyLoadingValueHolderFactory;
+use ProxyManager\Proxy\LazyLoadingInterface;
 use Ramsey\Uuid\Uuid;
 use yii\db\Connection;
 use yii\db\Query;
@@ -17,11 +20,17 @@ class SqlEmployeeRepository implements EmployeeRepository
 {
     private $db;
     private $hydrator;
+    private $lazyFactory;
 
-    public function __construct(Connection $db, Hydrator $hydrator)
+    public function __construct(
+        Connection $db,
+        Hydrator $hydrator,
+        LazyLoadingValueHolderFactory $lazyFactory
+    )
     {
         $this->db = $db;
         $this->hydrator = $hydrator;
+        $this->lazyFactory = $lazyFactory;
     }
 
     /**
@@ -40,18 +49,6 @@ class SqlEmployeeRepository implements EmployeeRepository
             throw new NotFoundException('Employee not found.');
         }
 
-        $phones = (new Query())->select('*')
-            ->from('{{%sql_employee_phones}}')
-            ->andWhere(['employee_id' => $id->getId()])
-            ->orderBy('id')
-            ->all($this->db);
-
-        $statuses = (new Query())->select('*')
-            ->from('{{%sql_employee_statuses}}')
-            ->andWhere(['employee_id' => $id->getId()])
-            ->orderBy('id')
-            ->all($this->db);
-
         return $this->hydrator->hydrate(Employee::class, [
             'id' => new Id($employee['id']),
             'name' => new Name(
@@ -67,19 +64,41 @@ class SqlEmployeeRepository implements EmployeeRepository
                 $employee['address_house']
             ),
             'createDate' => new \DateTimeImmutable($employee['create_date']),
-            'phones' => new Phones(array_map(static function ($phone) {
-                return new Phone(
-                    $phone['country'],
-                    $phone['code'],
-                    $phone['number']
-                );
-            }, $phones)),
-            'statuses' => array_map(static function ($status) {
-                return new Status(
-                    $status['value'],
-                    new \DateTimeImmutable($status['date'])
-                );
-            }, $statuses),
+            'phones' => $this->lazyFactory->createProxy(
+                Phones::class,
+                function (&$target, LazyLoadingInterface $proxy) use ($id) {
+                    $phones = (new Query())->select('*')
+                        ->from('{{%sql_employee_phones}}')
+                        ->andWhere(['employee_id' => $id->getId()])
+                        ->orderBy('id')
+                        ->all($this->db);
+                    $target = new Phones(array_map(function ($phone) {
+                        return new Phone(
+                            $phone['country'],
+                            $phone['code'],
+                            $phone['number']
+                        );
+                    }, $phones));
+                    $proxy->setProxyInitializer(null);
+                }
+            ),
+            'statuses' => $this->lazyFactory->createProxy(
+                ArrayObject::class,
+                function (&$target, LazyLoadingInterface $proxy) use ($id) {
+                    $statuses = (new Query())->select('*')
+                        ->from('{{%sql_employee_statuses}}')
+                        ->andWhere(['employee_id' => $id->getId()])
+                        ->orderBy('id')
+                        ->all($this->db);
+                    $target = new ArrayObject(array_map(function ($status) {
+                        return new Status(
+                            $status['value'],
+                            new \DateTimeImmutable($status['date'])
+                        );
+                    }, $statuses));
+                    $proxy->setProxyInitializer(null);
+                }
+            ),
         ]);
     }
 
@@ -89,6 +108,7 @@ class SqlEmployeeRepository implements EmployeeRepository
             $this->db->createCommand()
                 ->insert('{{%sql_employees}}', self::extractEmployeeData($employee))
                 ->execute();
+
             $this->updatePhones($employee);
             $this->updateStatuses($employee);
         });
@@ -136,6 +156,13 @@ class SqlEmployeeRepository implements EmployeeRepository
 
     private function updatePhones(Employee $employee)
     {
+        $data = $this->hydrator->extract($employee, ['phones']);
+        $phones = $data['phones'];
+
+        if ($phones instanceOf LazyLoadingInterface && !$phones->isProxyInitialized()) {
+            return;
+        }
+
         $this->db->createCommand()
             ->delete('{{%sql_employee_phones}}', ['employee_id' => $employee->getId()->getId()])
             ->execute();
@@ -157,6 +184,13 @@ class SqlEmployeeRepository implements EmployeeRepository
 
     private function updateStatuses(Employee $employee)
     {
+        $data = $this->hydrator->extract($employee, ['statuses']);
+        $statuses = $data['statuses'];
+
+        if ($statuses instanceOf LazyLoadingInterface && !$statuses->isProxyInitialized()) {
+            return;
+        }
+
         $this->db->createCommand()
             ->delete('{{%sql_employee_statuses}}', ['employee_id' => $employee->getId()->getId()])
             ->execute();

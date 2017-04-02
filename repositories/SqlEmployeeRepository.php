@@ -9,12 +9,12 @@ use app\entities\Employee\Name;
 use app\entities\Employee\Phone;
 use app\entities\Employee\Phones;
 use app\entities\Employee\Status;
-use ArrayObject;
 use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 use ProxyManager\Proxy\LazyLoadingInterface;
 use Ramsey\Uuid\Uuid;
 use yii\db\Connection;
 use yii\db\Query;
+use yii\helpers\Json;
 
 class SqlEmployeeRepository implements EmployeeRepository
 {
@@ -82,23 +82,12 @@ class SqlEmployeeRepository implements EmployeeRepository
                     $proxy->setProxyInitializer(null);
                 }
             ),
-            'statuses' => $this->lazyFactory->createProxy(
-                ArrayObject::class,
-                function (&$target, LazyLoadingInterface $proxy) use ($id) {
-                    $statuses = (new Query())->select('*')
-                        ->from('{{%sql_employee_statuses}}')
-                        ->andWhere(['employee_id' => $id->getId()])
-                        ->orderBy('id')
-                        ->all($this->db);
-                    $target = new ArrayObject(array_map(function ($status) {
-                        return new Status(
-                            $status['value'],
-                            new \DateTimeImmutable($status['date'])
-                        );
-                    }, $statuses));
-                    $proxy->setProxyInitializer(null);
-                }
-            ),
+            'statuses' => array_map(function ($status) {
+                return new Status(
+                    $status['value'],
+                    new \DateTimeImmutable($status['date'])
+                );
+            }, Json::decode($employee['statuses'])),
         ]);
     }
 
@@ -108,9 +97,7 @@ class SqlEmployeeRepository implements EmployeeRepository
             $this->db->createCommand()
                 ->insert('{{%sql_employees}}', self::extractEmployeeData($employee))
                 ->execute();
-
             $this->updatePhones($employee);
-            $this->updateStatuses($employee);
         });
     }
 
@@ -124,7 +111,6 @@ class SqlEmployeeRepository implements EmployeeRepository
                     ['id' => $employee->getId()->getId()]
                 )->execute();
             $this->updatePhones($employee);
-            $this->updateStatuses($employee);
         });
     }
 
@@ -151,6 +137,12 @@ class SqlEmployeeRepository implements EmployeeRepository
             'address_street' => $employee->getAddress()->getStreet(),
             'address_house' => $employee->getAddress()->getHouse(),
             'current_status' => end($statuses)->getValue(),
+            'statuses' => Json::encode(array_map(function (Status $status) {
+                return [
+                    'value' => $status->getValue(),
+                    'date' => $status->getDate()->format(DATE_RFC3339),
+                ];
+            }, $employee->getStatuses())),
         ];
     }
 
@@ -178,33 +170,6 @@ class SqlEmployeeRepository implements EmployeeRepository
                             'number' => $phone->getNumber(),
                         ];
                     }, $employee->getPhones()))
-                ->execute();
-        }
-    }
-
-    private function updateStatuses(Employee $employee)
-    {
-        $data = $this->hydrator->extract($employee, ['statuses']);
-        $statuses = $data['statuses'];
-
-        if ($statuses instanceOf LazyLoadingInterface && !$statuses->isProxyInitialized()) {
-            return;
-        }
-
-        $this->db->createCommand()
-            ->delete('{{%sql_employee_statuses}}', ['employee_id' => $employee->getId()->getId()])
-            ->execute();
-
-        if ($employee->getStatuses()) {
-            $this->db->createCommand()
-                ->batchInsert('{{%sql_employee_statuses}}', ['employee_id', 'value', 'date'],
-                    array_map(function (Status $status) use ($employee) {
-                        return [
-                            'employee_id' => $employee->getId()->getId(),
-                            'value' => $status->getValue(),
-                            'date' => $status->getDate()->format('Y-m-d H:i:s'),
-                        ];
-                    }, $employee->getStatuses()))
                 ->execute();
         }
     }

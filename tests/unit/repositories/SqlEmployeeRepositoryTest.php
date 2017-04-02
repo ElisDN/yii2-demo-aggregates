@@ -6,7 +6,6 @@ use app\repositories\SqlEmployeeRepository;
 use app\repositories\Hydrator;
 use tests\_fixtures\EmployeeFixture;
 use tests\_fixtures\EmployeePhoneFixture;
-use tests\_fixtures\EmployeeStatusFixture;
 use ProxyManager\Factory\LazyLoadingValueHolderFactory;
 
 class SqlEmployeeRepositoryTest extends BaseRepositoryTest
@@ -21,7 +20,6 @@ class SqlEmployeeRepositoryTest extends BaseRepositoryTest
         $this->tester->haveFixtures([
             'employee' => EmployeeFixture::className(),
             'phone' => EmployeePhoneFixture::className(),
-            'status' => EmployeeStatusFixture::className(),
         ]);
 
         $this->repository = new SqlEmployeeRepository(

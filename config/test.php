@@ -13,6 +13,9 @@ return [
         '@npm'   => '@vendor/npm-asset',
     ],
     'language' => 'en-US',
+    'bootstrap' => [
+        'app\bootstrap\ContainerBootstrap',
+    ],
     'components' => [
         'db' => $db,
         'mailer' => [

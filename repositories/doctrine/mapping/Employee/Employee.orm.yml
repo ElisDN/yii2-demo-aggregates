@@ -18,13 +18,13 @@ app\entities\Employee\Employee:
       class: Address
   oneToMany:
     relatedPhones:
-      targetEntity: Phone
+      targetEntity: EmployeePhone
       mappedBy: employee
       orderBy: { "id": "ASC" }
       cascade: ["persist", "merge"]
       orphanRemoval: true
     statuses:
-      targetEntity: Status
+      targetEntity: EmployeeStatus
       mappedBy: employee
       orderBy: { "id": "ASC" }
       cascade: ["persist", "merge"]

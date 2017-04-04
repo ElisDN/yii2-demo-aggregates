@@ -32,7 +32,7 @@ class Employee implements AggregateRoot
      */
     private $createDate;
     /**
-     * @var ArrayCollection|Status[]
+     * @var ArrayCollection|EmployeeStatus[]
      */
     private $statuses;
 
@@ -110,12 +110,12 @@ class Employee implements AggregateRoot
 
     private function getCurrentStatus(): Status
     {
-        return $this->statuses->last();
+        return $this->statuses->last()->getStatus();
     }
 
     private function addStatus($value, \DateTimeImmutable $date): void
     {
-        $this->statuses->add(new Status($this, $value, $date));
+        $this->statuses->add(new EmployeeStatus($this, new Status($value, $date)));
         $this->currentStatus = $value;
     }
 
@@ -124,7 +124,11 @@ class Employee implements AggregateRoot
     public function getPhones(): array { return $this->phones->getAll(); }
     public function getAddress(): Address { return $this->address; }
     public function getCreateDate(): \DateTimeImmutable { return $this->createDate; }
-    public function getStatuses(): array { return $this->statuses->toArray(); }
+    public function getStatuses(): array {
+        return $this->statuses->map(function (EmployeeStatus $row): Status {
+            return $row->getStatus();
+        })->toArray();
+    }
 
     ######## INFRASTRUCTURE #########
 

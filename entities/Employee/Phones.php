@@ -9,7 +9,7 @@ class Phones
 {
     private $employee;
     /**
-     * @var Collection|Phone[]
+     * @var Collection|EmployeePhone[]
      */
     private $phones;
 
@@ -28,12 +28,11 @@ class Phones
     public function add(Phone $phone): void
     {
         foreach ($this->phones as $item) {
-            if ($item->isEqualTo($phone)) {
+            if ($item->getPhone()->isEqualTo($phone)) {
                 throw new \DomainException('Phone already exists.');
             }
         }
-        $this->phones->add($phone);
-        $phone->setEmployee($this->employee);
+        $this->phones->add(new EmployeePhone($this->employee, $phone));
     }
 
     public function remove($index): Phone
@@ -44,11 +43,13 @@ class Phones
         if ($this->phones->count() === 1) {
             throw new \DomainException('Cannot remove the last phone.');
         }
-        return $this->phones->remove($index);
+        return $this->phones->remove($index)->getPhone();
     }
 
     public function getAll(): array
     {
-        return $this->phones->toArray();
+        return $this->phones->map(function (EmployeePhone $row): Phone {
+            return $row->getPhone();
+        })->toArray();
     }
 }

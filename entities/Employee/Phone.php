@@ -6,8 +6,6 @@ use Assert\Assertion;
 
 class Phone
 {
-    private $id;
-    private $employee;
     private $country;
     private $code;
     private $number;
@@ -36,9 +34,4 @@ class Phone
     public function getCountry(): int { return $this->country; }
     public function getCode(): string { return $this->code; }
     public function getNumber(): string { return $this->number; }
-
-    public function setEmployee(Employee $employee): void
-    {
-        $this->employee = $employee;
-    }
 }

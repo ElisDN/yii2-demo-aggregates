@@ -1,0 +1,19 @@
+app\entities\Employee\EmployeeStatus:
+  type: entity
+  table: doctrine_employee_statuses
+  readOnly: true
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  embedded:
+    status:
+      class: Status
+      columnPrefix: false
+  manyToOne:
+    employee:
+      targetEntity: Employee
+      joinColumn:
+        name: employee_id
+        referencedColumnName: id

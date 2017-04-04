@@ -19,7 +19,9 @@
         "yiisoft/yii2-bootstrap": "~2.0.0",
         "yiisoft/yii2-swiftmailer": "~2.0.0",
         "beberlei/assert": "^2.7",
-        "ramsey/uuid": "^3.6"
+        "ramsey/uuid": "^3.6",
+        "doctrine/orm": "^2.5",
+        "symfony/yaml": "^3.2"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

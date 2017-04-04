@@ -1,0 +1,20 @@
+app\entities\Employee\Status:
+  type: entity
+  table: doctrine_employee_statuses
+  readOnly: true
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    value:
+      type: string
+    date:
+      type: datetime_immutable
+  manyToOne:
+    employee:
+      targetEntity: Employee
+      joinColumn:
+        name: employee_id
+        referencedColumnName: id

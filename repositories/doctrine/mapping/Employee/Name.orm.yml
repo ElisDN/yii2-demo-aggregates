@@ -1,0 +1,9 @@
+app\entities\Employee\Name:
+  type: embeddable
+  fields:
+    last:
+      type: string
+    first:
+      type: string
+    middle:
+      type: string

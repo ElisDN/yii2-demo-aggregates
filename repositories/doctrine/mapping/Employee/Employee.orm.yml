@@ -1,0 +1,31 @@
+app\entities\Employee\Employee:
+  type: entity
+  table: doctrine_employees
+  id:
+    id:
+      type: employee_id
+  fields:
+    createDate:
+      column: create_date
+      type: datetime_immutable
+    currentStatus:
+      column: current_status
+      type: string
+  embedded:
+    name:
+      class: Name
+    address:
+      class: Address
+  oneToMany:
+    relatedPhones:
+      targetEntity: Phone
+      mappedBy: employee
+      orderBy: { "id": "ASC" }
+      cascade: ["persist", "merge"]
+      orphanRemoval: true
+    statuses:
+      targetEntity: Status
+      mappedBy: employee
+      orderBy: { "id": "ASC" }
+      cascade: ["persist", "merge"]
+      orphanRemoval: true

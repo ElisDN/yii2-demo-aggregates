@@ -5,6 +5,7 @@ namespace app\entities\Employee;
 use app\entities\AggregateRoot;
 use app\entities\Employee\Events;
 use app\entities\EventTrait;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class Employee implements AggregateRoot
 {
@@ -31,17 +32,18 @@ class Employee implements AggregateRoot
      */
     private $createDate;
     /**
-     * @var Status[]
+     * @var ArrayCollection|Status[]
      */
-    private $statuses = [];
+    private $statuses;
 
     public function __construct(Id $id, \DateTimeImmutable $date, Name $name, Address $address, array $phones)
     {
         $this->id = $id;
         $this->name = $name;
         $this->address = $address;
-        $this->phones = new Phones($phones);
+        $this->phones = new Phones($this, $this->relatedPhones, $phones);
         $this->createDate = $date;
+        $this->statuses = new ArrayCollection();
         $this->addStatus(Status::ACTIVE, $date);
         $this->recordEvent(new Events\EmployeeCreated($this->id));
     }
@@ -108,12 +110,13 @@ class Employee implements AggregateRoot
 
     private function getCurrentStatus(): Status
     {
-        return end($this->statuses);
+        return $this->statuses->last();
     }
 
     private function addStatus($value, \DateTimeImmutable $date): void
     {
-        $this->statuses[] = new Status($value, $date);
+        $this->statuses->add(new Status($this, $value, $date));
+        $this->currentStatus = $value;
     }
 
     public function getId(): Id { return $this->id; }
@@ -121,5 +124,11 @@ class Employee implements AggregateRoot
     public function getPhones(): array { return $this->phones->getAll(); }
     public function getAddress(): Address { return $this->address; }
     public function getCreateDate(): \DateTimeImmutable { return $this->createDate; }
-    public function getStatuses(): array { return $this->statuses; }
+    public function getStatuses(): array { return $this->statuses->toArray(); }
+
+    ######## INFRASTRUCTURE #########
+
+    private $currentStatus;
+    private $relatedPhones;
 }
+

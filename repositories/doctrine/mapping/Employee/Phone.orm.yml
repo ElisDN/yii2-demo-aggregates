@@ -1,0 +1,22 @@
+app\entities\Employee\Phone:
+  type: entity
+  table: doctrine_employee_phones
+  readOnly: true
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    country:
+      type: integer
+    code:
+      type: string
+    number:
+      type: string
+  manyToOne:
+    employee:
+      targetEntity: Employee
+      joinColumn:
+        name: employee_id
+        referencedColumnName: id

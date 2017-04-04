@@ -30,4 +30,9 @@ class Id
     {
         return $this->getId() === $other->getId();
     }
+
+    public function __toString()
+    {
+        return $this->id;
+    }
 }

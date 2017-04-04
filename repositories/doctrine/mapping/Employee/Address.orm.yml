@@ -1,0 +1,13 @@
+app\entities\Employee\Address:
+  type: embeddable
+  fields:
+    country:
+      type: string
+    region:
+      type: string
+    city:
+      type: string
+    street:
+      type: string
+    house:
+      type: string

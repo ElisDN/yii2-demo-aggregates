@@ -2,18 +2,24 @@
 
 namespace app\entities\Employee;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 class Phones
 {
+    private $employee;
     /**
-     * @var Phone[]
+     * @var Collection|Phone[]
      */
-    private $phones = [];
+    private $phones;
 
-    public function __construct(array $phones)
+    public function __construct(Employee $employee, &$relatedPhones, array $phones)
     {
         if (!$phones) {
             throw new \DomainException('Employee must contain at least one phone.');
         }
+        $this->employee = $employee;
+        $this->phones = $relatedPhones = new ArrayCollection();
         foreach ($phones as $phone) {
             $this->add($phone);
         }
@@ -26,7 +32,8 @@ class Phones
                 throw new \DomainException('Phone already exists.');
             }
         }
-        $this->phones[] = $phone;
+        $this->phones->add($phone);
+        $phone->setEmployee($this->employee);
     }
 
     public function remove($index): Phone
@@ -34,16 +41,14 @@ class Phones
         if (!isset($this->phones[$index])) {
             throw new \DomainException('Phone is not found.');
         }
-        if (\count($this->phones) === 1) {
+        if ($this->phones->count() === 1) {
             throw new \DomainException('Cannot remove the last phone.');
         }
-        $phone = $this->phones[$index];
-        unset($this->phones[$index]);
-        return $phone;
+        return $this->phones->remove($index);
     }
 
     public function getAll(): array
     {
-        return $this->phones;
+        return $this->phones->toArray();
     }
 }

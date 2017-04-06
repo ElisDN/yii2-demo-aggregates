@@ -49,8 +49,9 @@ php tests/bin/yii migrate
 TESTING
 -------
 
-Tests can be executed by running
+Tests can be executed by running:
 
 ```
 vendor/bin/codecept run unit entities
+vendor/bin/codecept run unit repositories
 ``` 

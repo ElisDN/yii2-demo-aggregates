@@ -16,14 +16,14 @@ class TablePrefixSubscriber implements EventSubscriber
         $this->prefix = (string) $prefix;
     }
 
-    public function getSubscribedEvents()
+    public function getSubscribedEvents(): array
     {
         return array(
             Events::loadClassMetadata,
         );
     }
 
-    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs)
+    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs): void
     {
         /** @var \Doctrine\ORM\Mapping\ClassMetadata $classMetadata */
         $classMetadata = $eventArgs->getClassMetadata();

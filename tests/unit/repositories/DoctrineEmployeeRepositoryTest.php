@@ -7,7 +7,6 @@ use app\repositories\DoctrineEmployeeRepository;
 use Doctrine\ORM\EntityManager;
 use tests\_fixtures\EmployeeFixture;
 use tests\_fixtures\EmployeePhoneFixture;
-use tests\_fixtures\EmployeeStatusFixture;
 use ProxyManager\Factory\AccessInterceptorValueHolderFactory;
 
 class DoctrineEmployeeRepositoryTest extends BaseRepositoryTest
@@ -22,7 +21,6 @@ class DoctrineEmployeeRepositoryTest extends BaseRepositoryTest
         $this->tester->haveFixtures([
             'employee' => EmployeeFixture::className(),
             'employee_phone' => EmployeePhoneFixture::className(),
-            'employee_status' => EmployeeStatusFixture::className(),
         ]);
 
         $em = $this->getEntityManager();

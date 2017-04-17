@@ -5,7 +5,6 @@ namespace app\entities\Employee;
 use app\entities\AggregateRoot;
 use app\entities\Employee\Events;
 use app\entities\EventTrait;
-use Doctrine\Common\Collections\ArrayCollection;
 
 class Employee implements AggregateRoot
 {
@@ -32,9 +31,9 @@ class Employee implements AggregateRoot
      */
     private $createDate;
     /**
-     * @var ArrayCollection|EmployeeStatus[]
+     * @var Status[]
      */
-    private $statuses;
+    private $statuses = [];
 
     public function __construct(Id $id, \DateTimeImmutable $date, Name $name, Address $address, array $phones)
     {
@@ -43,7 +42,6 @@ class Employee implements AggregateRoot
         $this->address = $address;
         $this->phones = new Phones($this, $this->relatedPhones, $phones);
         $this->createDate = $date;
-        $this->statuses = new ArrayCollection();
         $this->addStatus(Status::ACTIVE, $date);
         $this->recordEvent(new Events\EmployeeCreated($this->id));
     }
@@ -110,12 +108,12 @@ class Employee implements AggregateRoot
 
     private function getCurrentStatus(): Status
     {
-        return $this->statuses->last()->getStatus();
+        return end($this->statuses);
     }
 
     private function addStatus($value, \DateTimeImmutable $date): void
     {
-        $this->statuses->add(new EmployeeStatus($this, new Status($value, $date)));
+        $this->statuses[] = new Status($value, $date);
         $this->currentStatus = $value;
     }
 
@@ -124,11 +122,7 @@ class Employee implements AggregateRoot
     public function getPhones(): array { return $this->phones->getAll(); }
     public function getAddress(): Address { return $this->address; }
     public function getCreateDate(): \DateTimeImmutable { return $this->createDate; }
-    public function getStatuses(): array {
-        return $this->statuses->map(function (EmployeeStatus $row): Status {
-            return $row->getStatus();
-        })->toArray();
-    }
+    public function getStatuses(): array { return $this->statuses; }
 
     ######## INFRASTRUCTURE #########
 

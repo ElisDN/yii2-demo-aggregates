@@ -1,7 +1,0 @@
-app\entities\Employee\Status:
-  type: embeddable
-  fields:
-    value:
-      type: string
-    date:
-      type: datetime_immutable

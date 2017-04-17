@@ -11,6 +11,8 @@ app\entities\Employee\Employee:
     currentStatus:
       column: current_status
       type: string
+    statuses:
+      type: employee_statuses
   embedded:
     name:
       class: Name
@@ -19,12 +21,6 @@ app\entities\Employee\Employee:
   oneToMany:
     relatedPhones:
       targetEntity: EmployeePhone
-      mappedBy: employee
-      orderBy: { "id": "ASC" }
-      cascade: ["persist", "merge"]
-      orphanRemoval: true
-    statuses:
-      targetEntity: EmployeeStatus
       mappedBy: employee
       orderBy: { "id": "ASC" }
       cascade: ["persist", "merge"]
